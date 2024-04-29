@@ -1,0 +1,29 @@
+version: "3"
+services:
+  app:
+    container_name : "Back_container"
+    build: .
+    ports: 
+      - "9091:8081"
+    environment: 
+      - database_url=jdbc:mysql://localhost:3307/accounts?useSSL=false&serverTimezone=UTC
+      - database_user=root
+      - database_pass=LEO
+    depends_on:
+      - mysqldb
+  mysqldb:
+    container_name: "db"
+    image: mysql:8.0
+    ports: 
+      - "3307:3306"
+    volumes: 
+      - ./mysql:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "accounts"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "LEO"
+      MYSQL_ROOT_PASSWORD: "LEO"
+volumes:
+  mysql-data:
+    external: false
