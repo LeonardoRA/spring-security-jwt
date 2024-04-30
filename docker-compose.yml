@@ -1,41 +1,41 @@
 version: "3.8"
 services:
-  app:
-    container_name : "Back_container"
-    build: .
-    ports: 
-      - "9091:8081"
-    environment:
-      - database_url=jdbc:mysql://db:3307/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC
-      - database_user=root
-      - database_pass=${MYSQL_ROOT_PASSWORD}
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: always
-    networks:
-       - my_service_network
-  db:
-    container_name: "db"
-    image: mysql:8.0
+  mysqld:
+    container_name: "mysqld"
+    image: mysql:8.3
     ports: 
       - "3307:3306"
-    volumes: 
+#    volumes: 
 #      - ./mysql:/var/lib/mysql
-      - mysql-data:/var/lib/mysql
+#      - mysql-data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: "accounts"
       MYSQL_USER: "appusr"
       MYSQL_PASSWORD: "LEO"
       MYSQL_ROOT_PASSWORD: "LEO"
     restart: always
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#      interval: 30s
+#      timeout: 20s
+#      retries: 3
     networks:
       - my_service_network
+  app:
+    container_name : "Back_container"
+    build: .
+    ports: 
+      - "9091:8081"
+    environment:
+      - DATABASE_URL=jdbc:mysql://mysqld:3306/accounts?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=LEO
+    depends_on:
+      - mysqld
+#        condition: service_healthy
+    restart: always
+    networks:
+       - my_service_network
 networks:
   my_service_network: 
     driver: bridge
