@@ -1,29 +1,44 @@
-version: "3"
+version: "3.8"
 services:
   app:
     container_name : "Back_container"
     build: .
     ports: 
       - "9091:8081"
-    environment: 
-      - database_url=jdbc:mysql://localhost:3307/accounts?useSSL=false&serverTimezone=UTC
+    environment:
+      - database_url=jdbc:mysql://db:3307/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC
       - database_user=root
-      - database_pass=LEO
+      - database_pass=${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - mysqldb
-  mysqldb:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+       - my_service_network
+  db:
     container_name: "db"
     image: mysql:8.0
     ports: 
       - "3307:3306"
     volumes: 
-      - ./mysql:/var/lib/mysql
+#      - ./mysql:/var/lib/mysql
       - mysql-data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: "accounts"
-      MYSQL_USER: "root"
+      MYSQL_USER: "appusr"
       MYSQL_PASSWORD: "LEO"
       MYSQL_ROOT_PASSWORD: "LEO"
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - my_service_network
+networks:
+  my_service_network: 
+    driver: bridge
 volumes:
   mysql-data:
     external: false
