@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,7 +30,7 @@ import com.accounts.service.AccountService;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+//@EnableMethodSecurity
 public class SecurityConfigurer {
 	
 	 @Autowired
@@ -37,32 +38,17 @@ public class SecurityConfigurer {
 	 @Autowired
 	 private AuthenticationProvider authenticationProvider;
 	 
-	 @Bean
-	    CorsConfigurationSource corsConfigurationSource() {
-	        CorsConfiguration configuration = new CorsConfiguration();
-
-	        configuration.setAllowedOrigins(List.of("http://localhost:8081"));
-	        configuration.setAllowedMethods(List.of("GET","POST"));
-	        configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
-
-	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-	        source.registerCorsConfiguration("/**",configuration);
-
-	        return source;
-	    }
-	 
-	 
-	 
-	 @Bean
+	@Bean
 		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-			http
-				.authorizeHttpRequests((requests) -> requests
-					.requestMatchers("/Auth/**").permitAll()
-					.anyRequest().authenticated()
-//					.requestMatchers("/api/**").authenticated()
-				).authenticationProvider(authenticationProvider)
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+		 
+		 http.authorizeHttpRequests((requests) -> requests
+				 .requestMatchers(HttpMethod.GET, "/Auth/**").permitAll()
+				 .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
+				 .requestMatchers(HttpMethod.PUT, "/api/**").authenticated()
+				 .requestMatchers(HttpMethod.DELETE, "/api/**").authenticated()
+				 .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
+				 ).authenticationProvider(authenticationProvider)
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		 			
 			return http.build();
 	 }
