@@ -30,7 +30,7 @@ import com.accounts.service.AccountService;
 
 @Configuration
 @EnableWebSecurity
-//@EnableMethodSecurity
+@EnableMethodSecurity
 public class SecurityConfigurer {
 	
 	 @Autowired
@@ -41,17 +41,37 @@ public class SecurityConfigurer {
 	@Bean
 		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		 
-		 http.authorizeHttpRequests((requests) -> requests
-				 .requestMatchers(HttpMethod.GET, "/Auth/**").permitAll()
-				 .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
-				 .requestMatchers(HttpMethod.PUT, "/api/**").authenticated()
-				 .requestMatchers(HttpMethod.DELETE, "/api/**").authenticated()
-				 .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
-				 ).authenticationProvider(authenticationProvider)
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-		 			
+			http.csrf()
+	        .disable()
+	        .authorizeHttpRequests()
+	        .requestMatchers("/Auth/**")
+	        .permitAll()
+	        .anyRequest()
+	        .authenticated()
+	        .and()
+	        .sessionManagement()
+	        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+	        .and()
+	        .authenticationProvider(authenticationProvider)
+	        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 			return http.build();
 	 }
+	
+	@Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of("http://localhost:8005"));
+        configuration.setAllowedMethods(List.of("GET","POST"));
+        configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**",configuration);
+
+        return source;
+    }
 	 
 	 
 	 

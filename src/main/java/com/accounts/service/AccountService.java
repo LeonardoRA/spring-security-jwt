@@ -26,7 +26,7 @@ public class AccountService {
 		//Looking for existing user name
 		if(!isUpdate) {
 			AccountEntity accountFound =this.getAccount(account.getName());			
-			if(accountFound.getId()!= null)
+			if(accountFound != null)
 				throw new Exception("User Name Already exist");	
 		}
 		
@@ -51,9 +51,9 @@ public class AccountService {
 		
 		Example<AccountEntity> exampleAccount = Example.of(account, matcher);
 		
-		account = repository.findOne(exampleAccount).get();
+		Optional<AccountEntity> accountResult = repository.findOne(exampleAccount);
 		
-		return account;
+		return accountResult.isPresent()?accountResult.get():null;
 	}
 
 	public void delete(Long id) {
